@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGO_URI).then(function () {
 
 const credential = mongoose.model("credential", {}, "bulkmail")
 
-app.post("/sendemail", function (req, res) {
+app.post("https://bulkmail-backend-qan1.onrender.com/sendemail", function (req, res) {
 
     var msg = req.body.msg
     var emailList = req.body.emailList
