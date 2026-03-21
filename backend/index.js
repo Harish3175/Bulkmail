@@ -9,7 +9,7 @@ const mongoose = require('mongoose')
 app.use(express.json())
 //install nodemailer
 
-mongoose.connect("mongodb+srv://Harish:Harish317@cluster0.ruqju1d.mongodb.net/passkey?appName=Cluster0").then(function () {
+mongoose.connect(process.env.MONGO_URI).then(function () {
     console.log("connected to db")
 }).catch(function () {
     console.log("Failed to connect")
@@ -68,7 +68,8 @@ app.post("/sendemail", function (req, res) {
 
 })
 
+const PORT = process.env.PORT || 5000;
 
-app.listen(5000, () =>
-    console.log("Server started....")
-)
+app.listen(PORT, () =>{
+    console.log("Server started on port"+PORT)
+})
