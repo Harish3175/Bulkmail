@@ -2,9 +2,13 @@ const express = require("express")
 const cors = require("cors")
 const app = express()
 const nodemailer = require("nodemailer")
-app.use(cors())
-const mongoose = require('mongoose')
 
+app.use(cors({
+  origin: "https://bulkmail-plum-alpha.vercel.app",
+  methods: ["GET","POST"],
+  credentials: true
+}))
+const mongoose = require('mongoose')
 
 app.use(express.json())
 //install nodemailer
