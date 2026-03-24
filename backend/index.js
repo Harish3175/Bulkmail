@@ -1,83 +1,78 @@
-const express = require("express")
-const cors = require("cors")
-const app = express()
-const nodemailer = require("nodemailer")
+// import packages
+const express = require("express");
+const cors = require("cors");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
+const app = express();
+
+// middleware
 app.use(cors({
-  origin: "https://bulkmail-plum-alpha.vercel.app",
-  methods: ["GET","POST"],
+  origin: "https://bulkmail-plum-alpha.vercel.app", // your frontend URL
+  methods: ["GET", "POST"],
   credentials: true
-}))
-const mongoose = require('mongoose')
+}));
 
-app.use(express.json())
-//install nodemailer
+app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI).then(function () {
-    console.log("connected to db")
-}).catch(function () {
-    console.log("Failed to connect")
-})
-
-const credential = mongoose.model("credential", {}, "bulkmail")
-
-app.post("/sendemail", function (req, res) {
-
-    var msg = req.body.msg
-    var emailList = req.body.emailList
-
-
-    credential.find().then(function (data) {
-
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: data[0].toJSON().user,
-            pass: data[0].toJSON().pass,
-        },
-    });
-
-    new Promise(async function (resolve, reject) {
-        try {
-            for (var i = 0; i < emailList.length; i++) {
-                await transporter.sendMail(
-                    {
-                        from: "harishofficial317@gmail.com",
-                        to: emailList[i],
-                        subject: "message from bulkmail app",
-                        text: msg
-                    },
-                )
-                console.log("Email sent to:" + emailList[i])
-            }
-
-            resolve("Success")
-
-        } catch (error) {
-            reject("Failed")
-        }
-
-    }).then(function () {
-        res.send(true)
-    }).catch(function () {
-        res.send(false)
-    })
-
-    console.log(data[0].toJSON())
-})
-    .catch(function (error) {
-        console.log(error)
-    })
-
-
-})
-
-app.get("/",(req,res) => {
-    res.send("Backend is running...");
+// test route
+app.get("/", (req, res) => {
+  res.send("Backend is running...");
 });
 
+// send email route
+app.post("/sendemail", async (req, res) => {
+  try {
+    const { msg, emailList } = req.body;
+
+    // validation
+    if (!msg || !emailList || emailList.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Message or email list is missing"
+      });
+    }
+
+    // transporter setup
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // send emails in parallel
+    await Promise.all(
+      emailList.map((email) =>
+        transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Bulk Mail Message",
+          text: msg,
+        })
+      )
+    );
+
+    // success response
+    res.json({
+      success: true,
+      message: "Emails sent successfully"
+    });
+
+  } catch (error) {
+    console.log("Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to send emails"
+    });
+  }
+});
+
+// start server
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () =>{
-    console.log("Server started on port"+PORT)
-})
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
