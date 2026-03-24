@@ -25,7 +25,7 @@ const App = () => {
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
         const emailList = XLSX.utils.sheet_to_json(worksheet,{header:'A'})
-        const totalemail = emailList.map(function(item){return item.A})
+        const totalemail = emailList.map(item => item.A).filter(email => email)
         console.log(totalemail)
         setEmailList(totalemail)
     }
@@ -39,13 +39,19 @@ const App = () => {
     axios.post("https://bulkmail-backend-qan1.onrender.com/sendemail", {msg:msg,emailList:emailList} )
     .then(function(data)
   {
-    if(data.data === true)
+    if(data.data.success === true)
     {
       alert("Email sent successful")
       setstatus(false)
     }else{
       alert("Failed")
     }
+    setstatus(false)
+  })
+  .catch(function(err){
+    console.log(err);
+    alert("Server error")
+    setstatus(false)
   })
   }
 
