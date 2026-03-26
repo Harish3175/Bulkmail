@@ -11,7 +11,7 @@ app.get("/", function (req, res) {
     res.send("Backend is running...")
 })
 
-mongoose.connect(process.env.MONGO_URI).then(function(){
+mongoose.connect("mongodb+srv://Harish:TN4eB4A7FM2wKX2G@cluster0.a4bsq0d.mongodb.net/passkey?appName=Cluster0").then(function(){
     console.log("Connected to DB")
 }).catch(function(){console.log("Failed to connect")})
 
@@ -27,8 +27,8 @@ app.post("/sendemail", function (req, res) {
     const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: data[0].toJSON().user,
-        pass: data[0].toJSON().pass,
+        user: data[0].user,
+        pass: data[0].pass,
     },
 });
 
