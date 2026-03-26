@@ -1,82 +1,102 @@
-import React, { useState } from 'react'
-import axios from 'axios'
-import * as XLSX from "xlsx"
+import React, { useState } from "react";
+import axios from "axios";
+import * as XLSX from "xlsx";
 
 const App = () => {
 
-  const [msg,setmsg] = useState("")
-  const [status,setstatus] = useState(false)
-  const [emailList,setEmailList] = useState([])
-  
-  function handlemsg(evt){
-    setmsg(evt.target.value)
+  const [msg, setmsg] = useState("");
+  const [status, setstatus] = useState(false);
+  const [emailList, setEmailList] = useState([]);
+
+  function handlemsg(e) {
+    setmsg(e.target.value);
   }
 
-  function handlefile(event)
-  {
-    const file = event.target.files[0]
-    //console.log(file)
-    
+  function handlefile(event) {
+    const file = event.target.files[0];
+
     const reader = new FileReader();
+
     reader.onload = function (e) {
-        const data = e.target.result;
-        const workbook = XLSX.read(data, { type: 'binary' })
-        const sheetName = workbook.SheetNames[0]
-        const worksheet = workbook.Sheets[sheetName]
-        const emailList = XLSX.utils.sheet_to_json(worksheet,{header:'A'})
-        const totalemail = emailList.map(item => item.A).filter(email => email)
-        //console.log(totalemail)
-        setEmailList(totalemail)
-    }
+      const data = e.target.result;
+      const workbook = XLSX.read(data, { type: "binary" });
+
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: "A" });
+
+      const emails = jsonData
+        .map(item => item.A)
+        .filter(email => email);
+
+      setEmailList(emails);
+    };
 
     reader.readAsBinaryString(file);
   }
 
-  function send()
-  {
-    setstatus(true)
-    axios.post("https://bulkmail-backend-qan1.onrender.com/sendemail",{msg:msg,emailList:emailList})
-    .then(function(data)
-    {
-      if(data.data === true)
-      {
-        alert("Email sent successfuly")
-        setstatus(false)
+  function send() {
+    setstatus(true);
+
+    axios.post(
+      "https://bulkmail-backend-qan1.onrender.com/sendemail",
+      { msg, emailList }
+    )
+    .then(res => {
+      if (res.data === true) {
+        alert("✅ Email sent successfully");
+      } else {
+        alert("❌ Failed");
       }
-      else{
-        alert("Failed")
-      }
+      setstatus(false);
     })
+    .catch(err => {
+      console.log(err);
+      alert("❌ Server error");
+      setstatus(false);
+    });
   }
 
   return (
     <div>
-      <div className='bg-blue-950 text-white text-center'>
-        <h1 className='text-2xl font-medium px-5 py-3'>BulkMail</h1>
+      <div className="bg-blue-950 text-white text-center">
+        <h1 className="text-2xl font-medium px-5 py-3">BulkMail</h1>
       </div>
-      <div className='bg-blue-800 text-white text-center'>
-        <h1 className='font-medium px-5 py-3'>We can help your busness with sending multiple emails at once</h1>
-      </div>
-      <div className='bg-blue-600 text-white text-center'>
-        <h1 className='font-medium px-5 py-3'>Drag and Drop</h1>
-      </div>
-      <div className='bg-blue-400 flex flex-col items-center text-black px-5 py-3'>
-        <textarea onChange={handlemsg} value={msg} className='w-[80%] h-32 py-2 outline-none px-2 border border-black rounded-md' placeholder='Enter the Email text...'></textarea>
-        <div>
-          <input type='file' onChange={handlefile} className='border-4 border-dashed py-4 px-4 mt-5 mb-5'/>
-        </div>
-        <p>Total Email in the file : {emailList.length}</p>
 
-        <button onClick={send} className='bg-blue-950 py-2 px-2 text-white font-medium rounded-md mt-2 w-fit'>{status?"Sending...":"Send"}</button>
+      <div className="bg-blue-800 text-white text-center">
+        <h1 className="px-5 py-3">
+          Send multiple emails at once
+        </h1>
       </div>
-      <div className='bg-blue-300 p-10 text-white text-center'>
-      </div>
-      <div className='bg-blue-200 p-10 text-white text-center'>
-      </div>
-      <div className='bg-blue-100 p-11 text-white text-center'>
+
+      <div className="bg-blue-400 flex flex-col items-center px-5 py-5">
+
+        <textarea
+          onChange={handlemsg}
+          value={msg}
+          className="w-[80%] h-32 border p-2"
+          placeholder="Enter message..."
+        />
+
+        <input
+          type="file"
+          onChange={handlefile}
+          className="mt-4"
+        />
+
+        <p>Total Emails: {emailList.length}</p>
+
+        <button
+          onClick={send}
+          className="bg-blue-950 text-white px-4 py-2 mt-3"
+        >
+          {status ? "Sending..." : "Send"}
+        </button>
+
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
