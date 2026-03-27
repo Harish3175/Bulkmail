@@ -34,7 +34,8 @@ Other Tools:
 
 📸 Screenshot
 
-(Add your project screenshot here)
+(<img width="1920" height="960" alt="Bulkmail" src="https://github.com/user-attachments/assets/05b5f1cf-2a28-449d-abe0-f62f560b89d0" />
+)
 
 🔐 Security Note
 
